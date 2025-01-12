@@ -41,7 +41,7 @@ Run from the repo root as follows to download the model into `sd-data`
 Run from the repo root as follows to build and run txt2img in docker against the v1.5 model
 
 ```
-./bin/easy-txt2img.sh a clown holding 99 red balloons
+./bin/easy-txt2img.sh "a clown holding 99 red balloons"
 ```
 
 ## img2img
