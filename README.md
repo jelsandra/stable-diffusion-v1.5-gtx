@@ -24,6 +24,26 @@ This will launch gradio on port 7860 with txt2img. You can also use `docker comp
 
 <h1 align="center">Usage</h1>
 
+## easy
+
+The two scripts in `bin/` can be used to automate downloading the v1.5 model and running txt2img on it in a container, respectively.
+
+### easy-download-model
+
+Run from the repo root as follows to download the model into `sd-data`
+
+```
+./bin/easy-download-model.sh
+```
+
+### easy-txt2img
+
+Run from the repo root as follows to build and run txt2img in docker against the v1.5 model
+
+```
+./bin/easy-txt2img.sh a clown holding 99 red balloons
+```
+
 ## img2img
 
 - `img2img` can generate _512x512 images from a prior image and prompt using under 2.4GB VRAM in under 20 seconds per image_ on an RTX 2060.

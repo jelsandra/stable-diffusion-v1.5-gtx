@@ -5,8 +5,8 @@ services:
     ports:
       - "7860:7860"
     volumes:
-      - sd-output:/output
-      - sd-data:/data
+      - ./sd-output:/output
+      - ./sd-data:/data
       - sd-cache:/root/.cache
     environment:
       - APP_MAIN_FILE=txt2img_gradio.py
