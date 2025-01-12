@@ -1,11 +1,8 @@
 <h1 align="center">Optimized Stable Diffusion</h1>
-<p align="center">
-    <img src="https://img.shields.io/github/last-commit/basujindal/stable-diffusion?logo=Python&logoColor=green&style=for-the-badge"/>
-        <img src="https://img.shields.io/github/issues/basujindal/stable-diffusion?logo=GitHub&style=for-the-badge"/>
-                <img src="https://img.shields.io/github/stars/basujindal/stable-diffusion?logo=GitHub&style=for-the-badge"/>
-</p>
 
-This repo is a modified version of the Stable Diffusion repo, optimized to use less VRAM than the original by sacrificing inference speed.
+This repo is a modified version of the Stable Diffusion repo, optimized to use less VRAM than the original by sacrificing inference speed (e.g. GTX-1050).
+
+It is a fork of another repo specifically intended to be used with the Stable Diffusion v1.5 model.
 
 To reduce the VRAM usage, the following opimizations are used:
 
@@ -131,18 +128,3 @@ This will launch gradio on port 7860 with txt2img. You can also use `docker comp
 ### Green colored output images
 
 - If you have a Nvidia GTX series GPU, the output images maybe entirely green in color. This is because GTX series do not support half precision calculation, which is the default mode of calculation in this repository. To overcome the issue, use the `--precision full` argument. The downside is that it will lead to higher GPU VRAM usage.
-
-###
-
-## Changelog
-
-- v1.0: Added support for multiple samplers for txt2img. Based on [crowsonkb](https://github.com/crowsonkb/k-diffusion)
-- v0.9: Added support for calculating attention in parts. (Thanks to @neonsecret @Doggettx, @ryudrigo)
-- v0.8: Added gradio interface for inpainting.
-- v0.7: Added support for logging, jpg file format
-- v0.6: Added support for using weighted prompts. (based on @lstein's [repo](https://github.com/lstein/stable-diffusion))
-- v0.5: Added support for using gradio interface.
-- v0.4: Added support for specifying image seed.
-- v0.3: Added support for using mixed precision.
-- v0.2: Added support for generating images in batches.
-- v0.1: Split the model into multiple parts to run it on lower VRAM.

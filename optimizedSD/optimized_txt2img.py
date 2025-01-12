@@ -7,7 +7,6 @@ from PIL import Image
 from tqdm import tqdm, trange
 from itertools import islice
 from einops import rearrange
-from torchvision.utils import make_grid
 import time
 from pytorch_lightning import seed_everything
 from torch import autocast
@@ -15,6 +14,7 @@ from contextlib import contextmanager, nullcontext
 from ldm.util import instantiate_from_config
 from optimUtils import split_weighted_subprompts, logger
 from transformers import logging
+
 # from samplers import CompVisDenoiser
 logging.set_verbosity_error()
 
@@ -29,12 +29,11 @@ def load_model_from_config(ckpt, verbose=False):
     pl_sd = torch.load(ckpt, map_location="cpu")
     if "global_step" in pl_sd:
         print(f"Global Step: {pl_sd['global_step']}")
-    sd = pl_sd["state_dict"]
-    return sd
+    if "state_dict" in pl_sd:
+        return pl_sd["state_dict"]
+    else:
+        return pl_sd
 
-
-config = "optimizedSD/v1-inference.yaml"
-DEFAULT_CKPT = "models/ldm/stable-diffusion-v1/model.ckpt"
 
 parser = argparse.ArgumentParser()
 
@@ -42,11 +41,6 @@ parser.add_argument(
     "--prompt", type=str, nargs="?", default="a painting of a virus monster playing guitar", help="the prompt to render"
 )
 parser.add_argument("--outdir", type=str, nargs="?", help="dir to write results to", default="outputs/txt2img-samples")
-parser.add_argument(
-    "--skip_grid",
-    action="store_true",
-    help="do not save a grid, only individual samples. Helpful when evaluating lots of samples",
-)
 parser.add_argument(
     "--skip_save",
     action="store_true",
@@ -107,12 +101,6 @@ parser.add_argument(
     help="how many samples to produce for each given prompt. A.k.a. batch size",
 )
 parser.add_argument(
-    "--n_rows",
-    type=int,
-    default=0,
-    help="rows in the grid (default: n_samples)",
-)
-parser.add_argument(
     "--scale",
     type=float,
     default=7.5,
@@ -171,14 +159,19 @@ parser.add_argument(
     "--ckpt",
     type=str,
     help="path to checkpoint of model",
-    default=DEFAULT_CKPT,
+    default="models/ldm/stable-diffusion-v1/model.ckpt",
+)
+parser.add_argument(
+    "--config",
+    type=str,
+    default="configs/unet/v1-inference.yaml",
+    help="path to config which constructs model",
 )
 opt = parser.parse_args()
 
 tic = time.time()
 os.makedirs(opt.outdir, exist_ok=True)
 outpath = opt.outdir
-grid_count = len(os.listdir(outpath)) - 1
 
 if opt.seed == None:
     opt.seed = randint(0, 1000000)
@@ -187,7 +180,7 @@ seed_everything(opt.seed)
 # Logging
 logger(vars(opt), log_csv = "logs/txt2img_logs.csv")
 
-sd = load_model_from_config(f"{opt.ckpt}")
+sd = load_model_from_config(opt.ckpt)
 li, lo = [], []
 for key, value in sd.items():
     sp = key.split(".")
@@ -205,8 +198,9 @@ for key in li:
 for key in lo:
     sd["model2." + key[6:]] = sd.pop(key)
 
-config = OmegaConf.load(f"{config}")
+config = OmegaConf.load(opt.config)
 
+print("Instantiating model...")
 model = instantiate_from_config(config.modelUNet)
 _, _ = model.load_state_dict(sd, strict=False)
 model.eval()
@@ -234,7 +228,6 @@ if opt.fixed_code:
 
 
 batch_size = opt.n_samples
-n_rows = opt.n_rows if opt.n_rows > 0 else batch_size
 if not opt.from_file:
     assert opt.prompt is not None
     prompt = opt.prompt
